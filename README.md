@@ -41,7 +41,7 @@ Or directly:
 python src/server.py
 ```
 
-The server will start on `http://0.0.0.0:4444`.
+The server will start on `http://127.0.0.1:4444`.
 
 ## Docker Deployment
 
