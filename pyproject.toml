@@ -1,0 +1,27 @@
+[project]
+name = "telegram-fastmcp-server"
+version = "0.1.0"
+description = "A FastMCP server for Telegram integration"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+    "telethon",
+    "python-dotenv",
+    "nest_asyncio",
+    "python-json-logger"
+]
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+pythonpath = "."
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]

@@ -1,0 +1,14 @@
+services:
+  telepoke:
+    build: .
+    container_name: telepoke
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Persist session files (if using file-based session instead of string session)
+      - ./data:/app/data
