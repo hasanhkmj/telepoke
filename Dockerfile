@@ -25,7 +25,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
 # Expose the MCP server port
-EXPOSE 8000
+EXPOSE 4444
 
 # Run the server
 CMD ["python", "-m", "src.server"]

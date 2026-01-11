@@ -90,7 +90,7 @@ mcp.tool()(profile.update_profile)
 
 if __name__ == "__main__":
     host = "0.0.0.0"
-    port = 8000
+    port = 4444
     
     print(f"Starting Telegram FastMCP Server on {host}:{port}")
     

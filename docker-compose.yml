@@ -3,8 +3,11 @@ services:
     build: .
     container_name: telepoke
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    # Use host networking to avoid Docker bridge issues with Telethon
+    network_mode: "host"
+    # Ports are ignored in host mode, but we keep the server listening on 4444
+    # ports:
+    #   - "4444:4444"
     env_file:
       - .env
     environment:
