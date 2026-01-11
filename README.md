@@ -43,6 +43,31 @@ python src/server.py
 
 The server will start on `http://0.0.0.0:8000`.
 
+## Docker Deployment
+
+You can run Telepoke using Docker Compose, which creates a reproducible environment.
+
+1.  **Configure Environment**:
+    Ensure your `.env` file is created and populated (see **Setup** above):
+    ```bash
+    cp .env.example .env
+    # Edit .env with your credentials
+    ```
+
+2.  **Build and Run**:
+    ```bash
+    docker compose up -d --build
+    ```
+
+3.  **Check Logs**:
+    ```bash
+    docker compose logs -f
+    ```
+
+4.  **Container Management**:
+    - Stop: `docker compose down`
+    - Restart: `docker compose restart`
+
 ## Available Tools
 
 - **Messaging**: `send_message`, `get_messages`, `list_inline_buttons`, `press_inline_button`
