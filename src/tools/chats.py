@@ -3,8 +3,7 @@ from ..client import client
 from ..cache import (
     get_or_fetch_entity, 
     get_cached_dialogs, 
-    set_cached_dialogs, 
-    LIST_TTL
+    set_cached_dialogs
 )
 from ..utils import log_and_format_error
 import time
@@ -53,7 +52,11 @@ async def get_chats(page: int = 1, page_size: int = 20) -> str:
             
             # Determine Mute Status
             is_muted = False
-            settings = dialog.notify_settings
+            settings = getattr(dialog, "notify_settings", None)
+            if not settings and hasattr(dialog, "dialog"):
+                 # Sometimes it's nested in the 'dialog' attribute (TL object)
+                 settings = getattr(dialog.dialog, "notify_settings", None)
+                 
             if settings:
                  import datetime
                  now = datetime.datetime.now(datetime.timezone.utc)
