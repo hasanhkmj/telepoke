@@ -9,6 +9,7 @@ logger = logging.getLogger("telegram_cache")
 LIST_TTL = 60           # 1 minute for volatile lists (chats, contacts)
 ENTITY_TTL = 300        # 5 minutes for stable entities (User/Chat)
 MESSAGE_TTL = 10        # 10 seconds for message lists (debounce)
+MUTE_TTL = 30           # 30 seconds for mute status (fast reaction)
 
 # In-memory stores
 _DIALOGS_CACHE: Dict[str, Any] = {"data": None, "timestamp": 0}
@@ -105,3 +106,20 @@ def get_cached_messages(key: str) -> Optional[str]:
 
 def set_cached_messages(key: str, content: str) -> None:
     _MESSAGES_CACHE[key] = (content, time.time())
+
+# --- Mute Status Caching ---
+
+_MUTE_STATUS_CACHE: Dict[int, Tuple[bool, float]] = {}
+
+def get_cached_mute_status(peer_id: int) -> Optional[bool]:
+    """
+    Returns cached mute status (True/False) if valid, else None.
+    """
+    if peer_id in _MUTE_STATUS_CACHE:
+        is_muted, timestamp = _MUTE_STATUS_CACHE[peer_id]
+        if time.time() - timestamp < MUTE_TTL:
+            return is_muted
+    return None
+
+def set_cached_mute_status(peer_id: int, is_muted: bool) -> None:
+    _MUTE_STATUS_CACHE[peer_id] = (is_muted, time.time())

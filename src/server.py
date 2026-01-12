@@ -1,5 +1,6 @@
 # src/server.py
 import os
+import logging
 import asyncio
 from fastmcp import FastMCP
 from dotenv import load_dotenv
@@ -7,6 +8,17 @@ from .tools import messages, chats, contacts, admin, profile, media, interaction
 from .client import client
 from .forwarder import setup_forwarder
 
+# Configure Logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+# Set project loggers to DEBUG
+logging.getLogger("server").setLevel(logging.DEBUG)
+logging.getLogger("telegram_forwarder").setLevel(logging.DEBUG)
+logging.getLogger("telegram_client").setLevel(logging.DEBUG)
+
+logger = logging.getLogger("server")
 
 # Load Config
 load_dotenv()
@@ -73,6 +85,8 @@ mcp.tool()(chats.get_chat)
 mcp.tool()(chats.join_chat_by_link)
 mcp.tool()(chats.leave_chat)
 mcp.tool()(chats.get_unread_chats)
+mcp.tool()(chats.mute_chat)
+mcp.tool()(chats.unmute_chat)
 
 # Contact Tools
 mcp.tool()(contacts.list_contacts)

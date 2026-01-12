@@ -149,3 +149,88 @@ async def get_unread_chats(limit: int = 10) -> str:
 
     except Exception as e:
         return log_and_format_error("get_unread_chats", e)
+
+async def mute_chat(chat_id: Union[int, str], duration_seconds: int = 0) -> str:
+    """
+    Mute a chat or channel.
+    Args:
+        chat_id: ID or username.
+        duration_seconds: Duration in seconds. 0 means forever (default).
+    """
+    try:
+        from telethon.tl.types import InputNotifyPeer, PeerNotifySettings
+        import datetime
+        
+        entity = await get_or_fetch_entity(chat_id)
+        
+        # Calculate mute_until
+        if duration_seconds > 0:
+            mute_until = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=duration_seconds)
+        else:
+            # Forever (2038)
+            mute_until = datetime.datetime(2038, 1, 1, tzinfo=datetime.timezone.utc)
+
+        # Update settings
+        # We assume 'peer' needs to be wrapped properly, often client.get_input_entity helps
+        # But UpdateNotifySettingsRequest takes 'peer' as InputNotifyPeer
+        
+        # Telethon's convenience method might be easier but let's use Request for control
+        # Actually client(...) takes InputPeer usually. 
+        # But UpdateNotifySettingsRequest takes 'peer' of type InputNotifyPeer.
+        
+        # Let's try to construct InputNotifyPeer
+        # InputNotifyPeer(peer) where peer is InputPeer
+        
+        input_peer = await client.get_input_entity(entity)
+        
+        await client(functions.account.UpdateNotifySettingsRequest(
+            peer=InputNotifyPeer(input_peer),
+            settings=PeerNotifySettings(
+                show_previews=False, # Optional, strictly we just want to mute
+                # silent=True, # usage depends on context (e.g. sending silent message)
+                mute_until=mute_until
+            )
+        ))
+        
+        # Update cache immediately so it reflects
+        from ..cache import set_cached_mute_status
+        set_cached_mute_status(entity.id, True)
+
+        duration_str = "forever" if duration_seconds == 0 else f"for {duration_seconds} seconds"
+        return f"Muted chat {chat_id} {duration_str}."
+        
+    except Exception as e:
+        return log_and_format_error("mute_chat", e, chat_id=chat_id)
+
+async def unmute_chat(chat_id: Union[int, str]) -> str:
+    """
+    Unmute a chat or channel.
+    Args:
+        chat_id: ID or username.
+    """
+    try:
+        from telethon.tl.types import InputNotifyPeer, PeerNotifySettings
+        import datetime
+        
+        entity = await get_or_fetch_entity(chat_id)
+        
+        # 0 timestamp usually means unmuted in Telegram
+        mute_until = datetime.datetime.fromtimestamp(0, tz=datetime.timezone.utc)
+        
+        input_peer = await client.get_input_entity(entity)
+        
+        await client(functions.account.UpdateNotifySettingsRequest(
+            peer=InputNotifyPeer(input_peer),
+            settings=PeerNotifySettings(
+                mute_until=mute_until
+            )
+        ))
+        
+        # Update cache
+        from ..cache import set_cached_mute_status
+        set_cached_mute_status(entity.id, False)
+        
+        return f"Unmuted chat {chat_id}."
+        
+    except Exception as e:
+        return log_and_format_error("unmute_chat", e, chat_id=chat_id)
