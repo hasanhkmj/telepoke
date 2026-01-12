@@ -61,6 +61,20 @@ async def get_or_fetch_entity(entity_id: int, force_refresh: bool = False) -> An
         entity = await client.get_entity(entity_id)
         cache_entity(entity_id, entity)
         return entity
+    except ValueError:
+        # Fallback: StringSession might not have seen this entity yet.
+        # Fetching dialogs "seeds" the internal cache.
+        logger.warning(f"Entity {entity_id} not found in internal cache. Syncing dialogs to recover...")
+        try:
+            # Fetch a reasonable number of dialogs to find the chat
+            await client.get_dialogs(limit=50)
+            # Retry
+            entity = await client.get_entity(entity_id)
+            cache_entity(entity_id, entity)
+            return entity
+        except Exception as retry_e:
+             logger.error(f"Recovery failed for entity {entity_id}: {retry_e}")
+             raise retry_e
     except Exception as e:
         logger.error(f"Failed to fetch entity {entity_id}: {e}")
         raise e

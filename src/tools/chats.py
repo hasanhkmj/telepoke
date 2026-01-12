@@ -45,7 +45,29 @@ async def get_chats(page: int = 1, page_size: int = 20) -> str:
             entity = dialog.entity
             chat_id = entity.id
             title = getattr(entity, "title", None) or getattr(entity, "first_name", "Unknown")
-            lines.append(f"Chat ID: {chat_id}, Title: {title}, Unread: {dialog.unread_count}")
+            
+            # Determine Type
+            c_type = "Private"
+            if dialog.is_group: c_type = "Group"
+            elif dialog.is_channel: c_type = "Channel"
+            
+            # Determine Mute Status
+            is_muted = False
+            settings = dialog.notify_settings
+            if settings:
+                 import datetime
+                 now = datetime.datetime.now(datetime.timezone.utc)
+                 if settings.mute_until:
+                     if isinstance(settings.mute_until, int):
+                         if settings.mute_until > time.time():
+                             is_muted = True
+                     elif hasattr(settings.mute_until, 'timestamp'):
+                         if settings.mute_until > now:
+                             is_muted = True
+                     
+            mute_str = " [MUTED]" if is_muted else ""
+            
+            lines.append(f"• {title} | {c_type}{mute_str} | ID: {chat_id} | Unread: {dialog.unread_count}")
         
         if not lines:
              return "No chats found."
