@@ -180,7 +180,7 @@ async def mute_chat(chat_id: Union[int, str], duration_seconds: int = 0) -> str:
         duration_seconds: Duration in seconds. 0 means forever (default).
     """
     try:
-        from telethon.tl.types import InputNotifyPeer, PeerNotifySettings
+        from telethon.tl.types import InputNotifyPeer, InputPeerNotifySettings
         import datetime
         
         entity = await get_or_fetch_entity(chat_id)
@@ -193,23 +193,12 @@ async def mute_chat(chat_id: Union[int, str], duration_seconds: int = 0) -> str:
             mute_until = datetime.datetime(2038, 1, 1, tzinfo=datetime.timezone.utc)
 
         # Update settings
-        # We assume 'peer' needs to be wrapped properly, often client.get_input_entity helps
-        # But UpdateNotifySettingsRequest takes 'peer' as InputNotifyPeer
-        
-        # Telethon's convenience method might be easier but let's use Request for control
-        # Actually client(...) takes InputPeer usually. 
-        # But UpdateNotifySettingsRequest takes 'peer' of type InputNotifyPeer.
-        
-        # Let's try to construct InputNotifyPeer
-        # InputNotifyPeer(peer) where peer is InputPeer
-        
         input_peer = await client.get_input_entity(entity)
         
         await client(functions.account.UpdateNotifySettingsRequest(
             peer=InputNotifyPeer(input_peer),
-            settings=PeerNotifySettings(
-                show_previews=False, # Optional, strictly we just want to mute
-                # silent=True, # usage depends on context (e.g. sending silent message)
+            settings=InputPeerNotifySettings(
+                show_previews=False, 
                 mute_until=mute_until
             )
         ))
@@ -231,7 +220,7 @@ async def unmute_chat(chat_id: Union[int, str]) -> str:
         chat_id: ID or username.
     """
     try:
-        from telethon.tl.types import InputNotifyPeer, PeerNotifySettings
+        from telethon.tl.types import InputNotifyPeer, InputPeerNotifySettings
         import datetime
         
         entity = await get_or_fetch_entity(chat_id)
@@ -243,7 +232,7 @@ async def unmute_chat(chat_id: Union[int, str]) -> str:
         
         await client(functions.account.UpdateNotifySettingsRequest(
             peer=InputNotifyPeer(input_peer),
-            settings=PeerNotifySettings(
+            settings=InputPeerNotifySettings(
                 mute_until=mute_until
             )
         ))
