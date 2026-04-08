@@ -12,6 +12,7 @@ services:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
+      - MCP_BASE_URL=${MCP_BASE_URL}
     volumes:
       # Persist session files (if using file-based session instead of string session)
       - ./data:/app/data
